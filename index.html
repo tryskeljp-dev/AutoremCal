@@ -738,7 +738,7 @@ async function loadEventsForWeek() {
   showLoading('Chargement des événements...');
   const days = getWeekDays(weekOffset);
   const timeMin = new Date(days[0]); timeMin.setHours(0,0,0,0);
-  const timeMax = new Date(days[13]); timeMax.setHours(23,59,59,999); // 2 weeks
+  const timeMax = new Date(days[6]); timeMax.setHours(23,59,59,999);
 
   allEvents = {};
   const promises = allCalendars.map(async cal => {
@@ -781,7 +781,7 @@ function getWeekDays(offset) {
   const day = now.getDay();
   const monday = new Date(now);
   monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + offset * 7);
-  return Array.from({ length: 14 }, (_, i) => {
+  return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
     return d;
@@ -825,7 +825,7 @@ function renderCalendar() {
   if (wl) {
     const opts = { day: 'numeric', month: 'short' };
     wl.textContent = days[0].toLocaleDateString('fr-FR', opts) + ' — ' +
-                     days[13].toLocaleDateString('fr-FR', opts);
+                     days[6].toLocaleDateString('fr-FR', opts);
   }
 
   // Build legend
