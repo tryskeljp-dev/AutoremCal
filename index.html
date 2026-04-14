@@ -384,7 +384,7 @@
     margin-bottom: 2px;
     display: block;
     transition: filter 0.1s;
-    color: #fff;
+    color: #000;
   }
 
   .event-pill:hover { filter: brightness(0.9); }
@@ -884,7 +884,7 @@ function renderCalendar() {
           const title = ev.summary || '(sans titre)';
           const time = fmtTime(ev);
           const pillClass = isAllDay ? 'event-pill event-allday' : 'event-pill';
-          html += `<div class="${pillClass}" style="background:${evColor}"
+          html += `<div class="${pillClass}" style="background:${evColor};color:#000"
             data-title="${escAttr(title)}"
             data-time="${escAttr(time)}"
             data-cal="${escAttr(cal.summary || cal.id)}"
