@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TeamCal — Google Agenda</title>
+<title>AutoremCal — Google Agenda</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -521,13 +521,14 @@
 <header class="app-header" id="app-header">
   <div class="logo">
     <div class="logo-dot"></div>
-    TeamCal
+    AutoremCal
   </div>
   <div class="nav-controls" id="nav-controls" style="display:none;">
     <button class="nav-btn" id="prev-btn" title="Semaine précédente">&#8592;</button>
     <button class="today-btn" id="today-btn">Aujourd'hui</button>
     <button class="nav-btn" id="next-btn" title="Semaine suivante">&#8594;</button>
     <span class="week-label" id="week-label"></span>
+    <button class="nav-btn" id="refresh-btn" title="Rafraîchir" style="margin-left:4px;">&#8635;</button>
   </div>
   <div class="header-right" id="header-right"></div>
 </header>
@@ -538,7 +539,7 @@
     <div class="auth-card">
       <div class="auth-icon">📅</div>
       <h2>Connectez Google Agenda</h2>
-      <p>Affichez tous vos calendriers dans une vue multi-personnes style TeamCal. Vos données restent locales.</p>
+      <p>Affichez tous vos calendriers dans une vue multi-personnes style AutoremCal. Vos données restent locales.</p>
 
       <!-- CLIENT ID INLINE INPUT (fallback si non configuré dans le script) -->
       <div id="client-id-form" style="margin-bottom: 16px; display:none;">
@@ -771,6 +772,9 @@ document.getElementById('next-btn')?.addEventListener('click', () => {
 });
 document.getElementById('today-btn')?.addEventListener('click', () => {
   weekOffset = 0; loadEventsForWeek();
+});
+document.getElementById('refresh-btn')?.addEventListener('click', () => {
+  loadEventsForWeek();
 });
 
 // ══════════════════════════════════════════
