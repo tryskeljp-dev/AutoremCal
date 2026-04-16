@@ -279,7 +279,7 @@
   .client-id-input::placeholder { color: var(--text-faint); }
 
   /* ── CALENDAR TABLE ── */
-  .cal-wrapper { overflow-x: auto; }
+  .cal-wrapper { overflow-x: auto; padding-top: 2px; }
 
   .cal-table {
     width: 100%;
@@ -289,13 +289,14 @@
 
   .cal-table thead th {
     background: var(--surface);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 3px solid var(--border);
     border-right: 1px solid var(--border);
-    padding: 10px 8px 18px;
+    padding: 10px 8px 12px;
     text-align: center;
     position: sticky;
     top: 56px;
     z-index: 5;
+    box-shadow: 0 4px 0 var(--bg);
   }
 
   .col-person-head {
@@ -327,8 +328,8 @@
     background: var(--surface);
     border-right: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
-    padding: 6px 8px 6px 16px;
-    vertical-align: middle;
+    padding: 10px 8px 10px 16px;
+    vertical-align: top;
     white-space: nowrap;
     position: sticky;
     left: 0;
@@ -371,7 +372,7 @@
   }
 
   .cal-table tbody tr:first-child td {
-    border-top: 8px solid var(--bg);
+    border-top: none;
   }
 
   .today-td { background: var(--today-bg); }
