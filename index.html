@@ -369,12 +369,8 @@
     min-width: 100px;
   }
 
-  .spacer-row td {
-    height: 8px;
-    background: var(--bg);
-    border-right: none;
-    border-bottom: none;
-    border-top: none;
+  .cal-table tbody tr:first-child td {
+    padding-top: 14px;
   }
 
   .today-td { background: var(--today-bg); }
@@ -866,7 +862,6 @@ function renderCalendar() {
     </th>`;
   }
   html += `</tr></thead><tbody>`;
-  html += `<tr class="spacer-row"><td></td>${days.map(() => '<td></td>').join('')}</tr>`;
 
   // One row per calendar
   allCalendars.forEach((cal, ci) => {
