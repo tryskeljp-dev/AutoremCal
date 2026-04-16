@@ -495,11 +495,13 @@
     margin: 16px 24px;
   }
 
-  .no-events {
-    font-size: 11px;
-    color: var(--text-faint);
-    font-style: italic;
-    padding: 6px 4px;
+  .empty-warning {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    font-size: 16px;
+    opacity: 0.5;
   }
 </style>
 </head>
@@ -880,11 +882,12 @@ function renderCalendar() {
     </td>`;
 
     for (const day of days) {
+      const isWeekend = day.getDay() === 0 || day.getDay() === 6;
       const todayClass = isToday(day) ? ' today-td' : '';
       const dayEvents = events.filter(ev => eventInDay(ev, day));
       html += `<td class="event-td${todayClass}">`;
       if (dayEvents.length === 0) {
-        html += ``;
+        if (!isWeekend) html += `<div class="empty-warning" title="Aucune affectation">⚠️</div>`;
       } else {
         for (const ev of dayEvents) {
           const isAllDay = !ev.start?.dateTime;
