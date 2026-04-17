@@ -200,9 +200,9 @@
 
   .spacer-row td {
     height: 100px;
-    background: transparent;
-    border: none;
-    box-shadow: none;
+    background: var(--white);
+    border: none !important;
+    box-shadow: none !important;
   }
 
   .cal-table thead th {
@@ -670,7 +670,7 @@ function renderCalendar() {
     </th>`;
   }
   html += `</tr></thead><tbody>`;
-  html += `<tr class="spacer-row"><td></td>${days.map(() => '<td></td>').join('')}</tr>`;
+  html += `<tr class="spacer-row"><td style="position:sticky;left:0;background:var(--white);z-index:4;border:none;box-shadow:none;"></td>${days.map(() => '<td></td>').join('')}</tr>`;
 
   // One row per calendar
   allCalendars.forEach((cal, ci) => {
