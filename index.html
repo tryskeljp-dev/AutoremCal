@@ -247,7 +247,7 @@
 
   .event-td {
     border: var(--bd); padding: 4px; vertical-align: top;
-    height: 50px; min-width: 100px; overflow: hidden;
+    min-height: 70px; height: auto; min-width: 100px; overflow: visible;
     background: var(--white); box-shadow: var(--sh);
   }
 
@@ -832,8 +832,7 @@ function renderCalendar() {
       html += `<td class="event-td${todayClass}">`;
       if (dayEvents.length === 0) {
         if (!isWeekend) html += `<div class="empty-warning" title="Aucune affectation">⚠️</div>`;
-        html += `<button class="add-btn" onclick="openModalNew('${escAttr(cal.id)}', new Date('${day.toISOString()}'))">+ ajouter</button>`;
-      } else {
+        html += `<button class="add-btn" onclick="openModalNew('${escAttr(cal.id)}', new Date('${day.toISOString()}'))">+ ajouter</button>`;      } else {
         for (const ev of dayEvents) {
           const isAllDay = !ev.start?.dateTime;
           const evColor = ev.colorId ? getEventColor(ev.colorId) : color;
