@@ -191,7 +191,11 @@
   .cal-wrapper { overflow-x: auto; padding: 16px; }
 
   .cal-table {
-    width: 100%; border-collapse: separate; border-spacing: 4px; min-width: 800px;
+    width: 100%; border-collapse: separate; border-spacing: 4px 4px; min-width: 800px;
+  }
+
+  .cal-table tbody tr:first-child td {
+    padding-top: 30px;
   }
 
   .cal-table thead th {
