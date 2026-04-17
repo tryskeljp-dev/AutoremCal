@@ -598,7 +598,7 @@ function maybeInitTokenClient() {
   if (!id) return;
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: id,
-    scope: 'https://www.googleapis.com/auth/calendar.readonly',
+    scope: 'https://www.googleapis.com/auth/calendar',
     callback: handleTokenResponse,
   });
 }
