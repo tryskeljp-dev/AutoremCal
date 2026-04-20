@@ -254,16 +254,28 @@
   .today-td { background: #FFFDE0 !important; border-color: var(--red) !important; border-width: 3px !important; }
 
   .event-pill {
-    border: 2px solid var(--black); padding: 2px 7px;
-    font-family: 'Comic Neue', cursive; font-size: 14px; font-weight: 700;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    border: 2px solid var(--black); padding: 4px 7px;
+    font-family: 'Comic Neue', cursive;
+    white-space: normal; overflow: hidden;
     max-width: 100%; cursor: pointer; margin-bottom: 3px; display: block;
     box-shadow: 2px 2px 0 var(--black); transition: all 0.08s;
-    color: #000; text-transform: uppercase; letter-spacing: 0.2px;
+    color: #000;
   }
   .event-pill:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--black); }
 
-  .event-allday { border: 2px solid var(--black); padding: 2px 7px; }
+  .pill-title {
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .pill-time {
+    font-size: 11px; font-weight: 400;
+    opacity: 0.75; margin-top: 1px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .event-allday { border: 2px solid var(--black); padding: 4px 7px; }
 
   .empty-warning {
     display: flex; align-items: center; justify-content: center;
@@ -848,7 +860,7 @@ function renderCalendar() {
             onmouseleave="hideTooltip()"
             onclick="hideTooltip(); openModalEdit('${escAttr(cal.id)}', JSON.parse(this.dataset.ev))"
             data-ev="${evJson}"
-          >${escHtml(title)}</div>`;
+          ><div class="pill-title">${escHtml(title)}</div><div class="pill-time">${escHtml(time)}</div></div>`;
         }
         html += `<button class="add-btn" onclick="openModalNew('${escAttr(cal.id)}', new Date('${day.toISOString()}'))">+</button>`;
       }
