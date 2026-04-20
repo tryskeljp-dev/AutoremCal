@@ -275,7 +275,11 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
-  .event-allday { border: 2px solid var(--black); padding: 4px 7px; }
+  .event-allday {
+    border: 2px solid var(--black);
+    padding: 4px 7px;
+    white-space: normal;
+  }
 
   .empty-warning {
     display: flex; align-items: center; justify-content: center;
@@ -778,7 +782,14 @@ function eventInDay(event, day) {
 }
 
 function fmtTime(event) {
-  if (!event.start?.dateTime) return 'Toute la journée';
+  if (!event.start?.dateTime) {
+    const s = new Date(event.start.date);
+    const eRaw = new Date(event.end.date);
+    eRaw.setDate(eRaw.getDate() - 1); // end is exclusive
+    if (isoDate(s) === isoDate(eRaw)) return 'Journée entière';
+    return s.toLocaleDateString('fr-FR', { day:'numeric', month:'short' }) + ' – ' +
+           eRaw.toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+  }
   const s = new Date(event.start.dateTime);
   const e = new Date(event.end.dateTime);
   return s.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) +
