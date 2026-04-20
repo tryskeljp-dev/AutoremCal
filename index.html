@@ -501,6 +501,51 @@
   .add-btn:hover { border-color: var(--black); color: var(--black); background: var(--yellow); }
 
   .hidden { display: none !important; }
+
+  /* ── WARNING SUMMARY ── */
+  .warning-summary-row td { padding: 0; border: none; box-shadow: none; background: transparent; }
+
+  .wsummary-bar {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+    padding: 10px 16px;
+    background: var(--red);
+    border: var(--bd); border-color: var(--black);
+    box-shadow: var(--sh);
+    font-family: 'Comic Neue', cursive;
+    margin: 4px 0;
+  }
+
+  .wsummary-total {
+    font-family: 'Bangers', cursive;
+    font-size: 18px; letter-spacing: 1px;
+    color: #fff;
+    white-space: nowrap;
+  }
+
+  .wsummary-sep {
+    color: rgba(255,255,255,0.5);
+    font-size: 16px;
+  }
+
+  .wsummary-item {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 3px 10px;
+    font-size: 13px; font-weight: 700;
+    color: #fff;
+  }
+
+  .wsummary-name { }
+
+  .wsummary-count {
+    background: #fff;
+    color: var(--red);
+    border-radius: 50%;
+    width: 20px; height: 20px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
 </style>
 </head>
 <body>
@@ -941,7 +986,46 @@ function renderCalendar() {
     </th>`;
   }
   html += `</tr></thead><tbody>`;
-  html += `<tr class="spacer-row"><td style="position:sticky;left:0;background:var(--white);z-index:4;border:none;box-shadow:none;"></td>${days.map(() => '<td></td>').join('')}</tr>`;
+
+  // ── WARNING SUMMARY ──
+  const warningSummary = [];
+  let totalWarnings = 0;
+  allCalendars.forEach((cal) => {
+    const isProvisoire = (cal.summary || '').toLowerCase().includes('provisoir');
+    if (isProvisoire) return;
+    const events = allEvents[cal.id] || [];
+    let count = 0;
+    days.forEach(day => {
+      const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+      if (isWeekend) return;
+      const hasEvent = events.some(ev => eventInDay(ev, day));
+      if (!hasEvent) count++;
+    });
+    if (count > 0) {
+      warningSummary.push({ name: cal.summary || cal.id, count });
+      totalWarnings += count;
+    }
+  });
+
+  if (totalWarnings > 0) {
+    const summaryItems = warningSummary.map(w =>
+      `<span class="wsummary-item">
+        <span class="wsummary-name">${escHtml(w.name)}</span>
+        <span class="wsummary-count">${w.count}</span>
+      </span>`
+    ).join('');
+    html += `<tr class="warning-summary-row">
+      <td colspan="${days.length + 1}">
+        <div class="wsummary-bar">
+          <span class="wsummary-total">⚠️ ${totalWarnings} jour${totalWarnings > 1 ? 's' : ''} sans affectation</span>
+          <span class="wsummary-sep">—</span>
+          ${summaryItems}
+        </div>
+      </td>
+    </tr>`;
+  }
+
+  html += `<tr class="spacer-row"><td style="position:sticky;left:0;background:var(--bg-spacer);z-index:4;border:none;box-shadow:none;"></td>${days.map(() => '<td></td>').join('')}</tr>`;
 
   // One row per calendar
   allCalendars.forEach((cal, ci) => {
