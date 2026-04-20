@@ -958,11 +958,12 @@ function renderCalendar() {
 
     for (const day of days) {
       const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+      const isProvisoir = cal.summary && cal.summary.toLowerCase().includes('provisoir');
       const todayClass = isToday(day) ? ' today-td' : '';
       const dayEvents = events.filter(ev => eventInDay(ev, day));
       html += `<td class="event-td${todayClass}">`;
       if (dayEvents.length === 0) {
-        if (!isWeekend) html += `<div class="empty-warning" title="Aucune affectation">⚠️</div>`;
+        if (!isWeekend && !isProvisoir) html += `<div class="empty-warning" title="Aucune affectation">⚠️</div>`;
         html += `<button class="add-btn" onclick="openModalNew('${escAttr(cal.id)}', new Date('${day.toISOString()}'))">+ ajouter</button>`;      } else {
         for (const ev of dayEvents) {
           const isAllDay = !ev.start?.dateTime;
