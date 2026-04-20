@@ -8,6 +8,7 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  /* ── THEMES ── */
   :root {
     --black: #0A0A0A;
     --white: #FFFEF5;
@@ -18,21 +19,87 @@
     --bd-thick: 4px solid #0A0A0A;
     --sh: 4px 4px 0 #0A0A0A;
     --sh-lg: 6px 6px 0 #0A0A0A;
+    --bg-body: #FFFEF5;
+    --bg-cell: #FFFEF5;
+    --bg-header: #FFE234;
+    --bg-thead: #0A0A0A;
+    --color-thead: #FFE234;
+    --bg-person: #FFFEF5;
+    --bg-today-cell: #FFFDE0;
+    --bg-legend: #0A0A0A;
+    --color-legend: #FFE234;
+    --bg-modal: #FFFEF5;
+    --bg-spacer: #FFFEF5;
+    --shadow-color: #0A0A0A;
+  }
+
+  html[data-theme="light"] {
+    --black: #1A1A2E;
+    --white: #F8F9FF;
+    --yellow: #4361EE;
+    --red: #E63946;
+    --blue: #4361EE;
+    --bd: 2px solid #CBD5E1;
+    --bd-thick: 3px solid #94A3B8;
+    --sh: 2px 2px 0 #CBD5E1;
+    --sh-lg: 4px 4px 0 #CBD5E1;
+    --bg-body: #F0F4FF;
+    --bg-cell: #FFFFFF;
+    --bg-header: #FFFFFF;
+    --bg-thead: #4361EE;
+    --color-thead: #FFFFFF;
+    --bg-person: #FFFFFF;
+    --bg-today-cell: #EEF2FF;
+    --bg-legend: #EEF2FF;
+    --color-legend: #4361EE;
+    --bg-modal: #FFFFFF;
+    --bg-spacer: #F0F4FF;
+    --shadow-color: #CBD5E1;
   }
 
   body {
     font-family: 'Comic Neue', cursive;
-    background: var(--white);
+    background: var(--bg-body);
     background-image:
-      repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(0,0,0,0.04) 28px, rgba(0,0,0,0.04) 29px),
-      repeating-linear-gradient(90deg, transparent, transparent 28px, rgba(0,0,0,0.04) 28px, rgba(0,0,0,0.04) 29px);
+      repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(0,0,0,0.03) 28px, rgba(0,0,0,0.03) 29px),
+      repeating-linear-gradient(90deg, transparent, transparent 28px, rgba(0,0,0,0.03) 28px, rgba(0,0,0,0.03) 29px);
     color: var(--black);
     min-height: 100vh;
     font-size: 18px;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  /* ── RESPONSIVE BASE ── */
+  @media (max-width: 768px) {
+    body { font-size: 14px; }
+    .app-header { height: 52px; padding: 0 12px; gap: 8px; }
+    .logo { font-size: 22px; }
+    .week-label { font-size: 14px; min-width: 100px; }
+    .nav-btn { width: 28px; height: 28px; font-size: 14px; }
+    .today-btn { font-size: 12px; padding: 4px 8px; }
+    .user-chip { font-size: 12px; }
+    .sign-out-btn { font-size: 11px; padding: 4px 8px; }
+    .theme-btn { width: 28px; height: 28px; font-size: 14px; }
+    .modal { padding: 20px 16px; margin: 8px; }
+    .modal-row { flex-direction: column; gap: 0; }
+    .cal-wrapper { padding: 8px; }
+    .day-head-num { font-size: 18px; }
+    .day-head-name { font-size: 10px; }
+    .person-name { font-size: 12px; }
+    .pill-title { font-size: 10px; }
+    .pill-time { font-size: 9px; }
+    .spacer-row td { height: 40px; }
+  }
+
+  @media (max-width: 480px) {
+    body { font-size: 12px; }
+    .logo { font-size: 18px; }
+    .week-label { display: none; }
+    .auth-card { padding: 24px 16px; }
   }
 
   .app-header {
-    background: var(--yellow);
+    background: var(--bg-header);
     border-bottom: var(--bd-thick);
     padding: 0 24px;
     height: 64px;
@@ -42,7 +109,8 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 4px 0 var(--black);
+    box-shadow: 0 4px 0 var(--shadow-color);
+    transition: background 0.2s;
   }
 
   .logo {
@@ -68,7 +136,7 @@
 
   .nav-btn {
     border: var(--bd);
-    background: var(--white);
+    background: var(--bg-cell);
     width: 34px; height: 34px;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
@@ -77,8 +145,8 @@
     box-shadow: var(--sh);
     transition: all 0.08s;
   }
-  .nav-btn:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--black); background: var(--red); color: #fff; }
-  .nav-btn:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--black); }
+  .nav-btn:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--shadow-color); background: var(--red); color: #fff; }
+  .nav-btn:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--shadow-color); }
 
   .week-label {
     font-family: 'Bangers', cursive;
@@ -87,19 +155,28 @@
   }
 
   .today-btn {
-    border: var(--bd); background: var(--white);
+    border: var(--bd); background: var(--bg-cell);
     padding: 6px 14px; cursor: pointer;
     font-family: 'Comic Neue', cursive; font-weight: 700; font-size: 16px;
     color: var(--black); box-shadow: var(--sh); transition: all 0.08s;
     text-transform: uppercase; letter-spacing: 0.5px;
   }
-  .today-btn:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--black); background: var(--blue); color: #fff; }
+  .today-btn:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--shadow-color); background: var(--blue); color: #fff; }
 
   .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
 
+  .theme-btn {
+    border: var(--bd); background: var(--bg-cell);
+    width: 34px; height: 34px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: var(--black);
+    box-shadow: var(--sh); transition: all 0.08s;
+  }
+  .theme-btn:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--shadow-color); background: var(--yellow); }
+
   .user-chip {
     display: flex; align-items: center; gap: 8px;
-    background: var(--white); border: var(--bd);
+    background: var(--bg-cell); border: var(--bd);
     padding: 4px 12px 4px 4px;
     font-family: 'Comic Neue', cursive; font-weight: 700; font-size: 16px;
     color: var(--black); box-shadow: var(--sh);
@@ -114,13 +191,13 @@
   }
 
   .sign-out-btn {
-    border: var(--bd); background: var(--white);
+    border: var(--bd); background: var(--bg-cell);
     padding: 6px 12px; cursor: pointer;
     font-family: 'Comic Neue', cursive; font-weight: 700; font-size: 15px;
     color: var(--black); box-shadow: var(--sh); transition: all 0.08s;
     text-transform: uppercase;
   }
-  .sign-out-btn:hover { background: var(--red); color: #fff; transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--black); }
+  .sign-out-btn:hover { background: var(--red); color: #fff; transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--shadow-color); }
 
   .auth-screen {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -128,7 +205,7 @@
   }
 
   .auth-card {
-    background: var(--white); border: var(--bd-thick);
+    background: var(--bg-modal); border: var(--bd-thick);
     box-shadow: var(--sh-lg); padding: 40px 48px;
     max-width: 440px; width: 100%; position: relative;
   }
@@ -145,7 +222,7 @@
     margin-bottom: 10px; text-shadow: 2px 2px 0 var(--yellow);
   }
 
-  .auth-card p { font-size: 16px; font-weight: 700; color: #333; line-height: 1.6; margin-bottom: 28px; }
+  .auth-card p { font-size: 16px; font-weight: 700; color: var(--black); opacity: 0.7; line-height: 1.6; margin-bottom: 28px; }
 
   .google-btn {
     display: inline-flex; align-items: center; gap: 10px;
@@ -155,12 +232,13 @@
     box-shadow: var(--sh); width: 100%; justify-content: center;
     transition: all 0.08s; text-transform: uppercase; letter-spacing: 1px;
   }
-  .google-btn:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--black); }
+  .google-btn:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--shadow-color); }
   .google-btn svg { width: 18px; height: 18px; }
 
   .auth-setup {
     margin-top: 24px; padding: 16px;
     background: var(--yellow); border: var(--bd); box-shadow: var(--sh); text-align: left;
+    opacity: 0.9;
   }
 
   .auth-setup h4 {
@@ -183,7 +261,7 @@
   .client-id-input {
     width: 100%; padding: 8px 12px; border: var(--bd);
     font-family: 'Comic Neue', cursive; font-size: 14px; font-weight: 700;
-    background: var(--white); color: var(--black); margin-top: 8px; outline: none;
+    background: var(--bg-cell); color: var(--black); margin-top: 8px; outline: none;
     box-shadow: var(--sh);
   }
   .client-id-input:focus { outline: 2px solid var(--blue); }
@@ -194,22 +272,21 @@
     width: 100%; border-collapse: separate; border-spacing: 4px 4px; min-width: 800px;
   }
 
-  .cal-table tbody tr:first-child td {
-    padding-top: 0;
-  }
+  .cal-table tbody tr:first-child td { padding-top: 0; }
 
   .spacer-row td {
     height: 100px;
-    background: var(--white);
+    background: var(--bg-spacer);
     border: none !important;
     box-shadow: none !important;
   }
 
   .cal-table thead th {
-    background: var(--black); color: var(--yellow);
+    background: var(--bg-thead); color: var(--color-thead);
     border: var(--bd); padding: 10px 8px;
     text-align: center; z-index: 5;
     box-shadow: var(--sh);
+    transition: background 0.2s;
   }
 
   .col-person-head {
@@ -218,14 +295,14 @@
   }
 
   .day-head-num { font-family: 'Bangers', cursive; font-size: 30px; letter-spacing: 1px; line-height: 1; }
-  .day-head-name { font-family: 'Comic Neue', cursive; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; color: var(--yellow); }
+  .day-head-name { font-family: 'Comic Neue', cursive; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; color: var(--color-thead); opacity: 0.75; }
 
   .today-head { background: var(--yellow) !important; }
   .today-head .day-head-num { color: var(--red); }
-  .today-head .day-head-name { color: var(--black); }
+  .today-head .day-head-name { color: var(--black); opacity: 1; }
 
   .person-cell {
-    background: var(--white); border: var(--bd);
+    background: var(--bg-person); border: var(--bd);
     padding: 8px 8px 8px 10px; vertical-align: top; white-space: nowrap;
     position: sticky; left: 0; z-index: 3; box-shadow: var(--sh);
   }
@@ -237,7 +314,7 @@
     display: flex; align-items: center; justify-content: center;
     font-family: 'Bangers', cursive; font-size: 18px; letter-spacing: 0.5px;
     flex-shrink: 0; color: #fff;
-    border: 2px solid var(--black); box-shadow: 2px 2px 0 var(--black);
+    border: 2px solid var(--black); box-shadow: 2px 2px 0 var(--shadow-color);
   }
 
   .person-name {
@@ -248,20 +325,20 @@
   .event-td {
     border: var(--bd); padding: 4px; vertical-align: top;
     min-height: 70px; height: auto; min-width: 100px; overflow: visible;
-    background: var(--white); box-shadow: var(--sh);
+    background: var(--bg-cell); box-shadow: var(--sh);
   }
 
-  .today-td { background: #FFFDE0 !important; border-color: var(--red) !important; border-width: 3px !important; }
+  .today-td { background: var(--bg-today-cell) !important; border-color: var(--red) !important; border-width: 3px !important; }
 
   .event-pill {
     border: 2px solid var(--black); padding: 4px 7px;
     font-family: 'Comic Neue', cursive;
     white-space: normal; overflow: visible;
     max-width: 100%; cursor: pointer; margin-bottom: 3px; display: block;
-    box-shadow: 2px 2px 0 var(--black); transition: all 0.08s;
+    box-shadow: 2px 2px 0 var(--shadow-color); transition: all 0.08s;
     color: #000;
   }
-  .event-pill:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--black); }
+  .event-pill:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--shadow-color); }
 
   .pill-title {
     font-size: 12px; font-weight: 700;
@@ -279,9 +356,7 @@
 
   .event-allday {
     border: 2px solid var(--black);
-    padding: 4px 7px;
-    white-space: normal;
-    display: block;
+    padding: 4px 7px; white-space: normal; display: block;
   }
 
   .empty-warning {
@@ -293,7 +368,7 @@
 
   .spinner {
     width: 36px; height: 36px;
-    border: 4px solid var(--black); border-top-color: var(--yellow);
+    border: 4px solid var(--shadow-color); border-top-color: var(--yellow);
     border-radius: 50%; animation: spin 0.6s linear infinite;
     margin: 0 auto 16px; box-shadow: var(--sh);
   }
@@ -303,13 +378,14 @@
 
   .legend-bar {
     padding: 8px 16px; border-bottom: var(--bd);
-    background: var(--black);
+    background: var(--bg-legend);
     display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
     font-family: 'Comic Neue', cursive; font-size: 14px; font-weight: 700;
-    color: var(--yellow); text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--color-legend); text-transform: uppercase; letter-spacing: 0.5px;
+    transition: background 0.2s;
   }
 
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; border: 2px solid var(--yellow); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; border: 2px solid var(--color-legend); }
   .legend-item { display: flex; align-items: center; gap: 5px; }
 
   .tooltip {
@@ -331,19 +407,21 @@
   /* ── MODAL ── */
   .modal-overlay {
     position: fixed; inset: 0;
-    background: rgba(10,10,10,0.6);
+    background: rgba(10,10,10,0.5);
     z-index: 200;
     display: flex; align-items: center; justify-content: center;
+    padding: 16px;
   }
   .modal-overlay.hidden { display: none; }
 
   .modal {
-    background: var(--white);
+    background: var(--bg-modal);
     border: var(--bd-thick);
     box-shadow: var(--sh-lg);
     padding: 28px 32px;
     width: 100%; max-width: 460px;
     position: relative;
+    max-height: 90vh; overflow-y: auto;
   }
 
   .modal h3 {
@@ -351,6 +429,7 @@
     font-size: 26px; letter-spacing: 2px;
     margin-bottom: 20px;
     text-shadow: 2px 2px 0 var(--yellow);
+    color: var(--black);
   }
 
   .modal-field { margin-bottom: 14px; }
@@ -360,13 +439,13 @@
     font-family: 'Comic Neue', cursive;
     font-weight: 700; font-size: 13px;
     text-transform: uppercase; letter-spacing: 0.5px;
-    margin-bottom: 5px;
+    margin-bottom: 5px; color: var(--black);
   }
 
   .modal-field input,
   .modal-field select {
     width: 100%; padding: 9px 12px;
-    border: var(--bd); background: var(--white);
+    border: var(--bd); background: var(--bg-cell);
     font-family: 'Comic Neue', cursive; font-weight: 700; font-size: 14px;
     color: var(--black); outline: none;
     box-shadow: var(--sh);
@@ -387,7 +466,7 @@
     box-shadow: var(--sh); transition: all 0.08s;
     text-transform: uppercase;
   }
-  .btn-save:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--black); }
+  .btn-save:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--shadow-color); }
 
   .btn-delete {
     padding: 10px 16px;
@@ -397,29 +476,31 @@
     box-shadow: var(--sh); transition: all 0.08s;
     text-transform: uppercase;
   }
-  .btn-delete:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--black); }
+  .btn-delete:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--shadow-color); }
 
   .btn-cancel {
     padding: 10px 16px;
-    background: var(--white); color: var(--black);
+    background: var(--bg-cell); color: var(--black);
     border: var(--bd); font-family: 'Comic Neue', cursive;
     font-weight: 700; font-size: 15px; cursor: pointer;
     box-shadow: var(--sh); transition: all 0.08s;
     text-transform: uppercase;
   }
-  .btn-cancel:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--black); background: var(--yellow); }
+  .btn-cancel:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--shadow-color); background: var(--yellow); }
 
   .event-pill { cursor: pointer; }
   .event-td { cursor: cell; }
 
   .add-btn {
     display: block; width: 100%; padding: 4px 0;
-    background: transparent; border: 2px dashed rgba(10,10,10,0.2);
+    background: transparent; border: 2px dashed rgba(0,0,0,0.15);
     font-family: 'Comic Neue', cursive; font-weight: 700; font-size: 11px;
-    color: rgba(10,10,10,0.3); cursor: pointer; text-align: center;
+    color: rgba(0,0,0,0.25); cursor: pointer; text-align: center;
     margin-top: 2px; transition: all 0.1s;
   }
   .add-btn:hover { border-color: var(--black); color: var(--black); background: var(--yellow); }
+
+  .hidden { display: none !important; }
 </style>
 </head>
 <body>
@@ -455,6 +536,7 @@
     <button class="nav-btn" id="next-btn" title="Semaine suivante">&#8594;</button>
     <span class="week-label" id="week-label"></span>
     <button class="nav-btn" id="refresh-btn" title="Rafraîchir" style="margin-left:4px;">&#8635;</button>
+    <button class="theme-btn" id="theme-btn" title="Changer de thème">🎨</button>
   </div>
   <div class="header-right" id="header-right"></div>
 </header>
@@ -747,6 +829,29 @@ document.getElementById('today-btn')?.addEventListener('click', () => {
 });
 document.getElementById('refresh-btn')?.addEventListener('click', () => {
   loadEventsForWeek();
+});
+
+// ── THEME TOGGLE ──
+const themeBtn = document.getElementById('theme-btn');
+let currentTheme = localStorage.getItem('autocal-theme') || 'bd';
+applyTheme(currentTheme);
+
+function applyTheme(theme) {
+  if (theme === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    if (themeBtn) themeBtn.textContent = '🦇';
+    if (themeBtn) themeBtn.title = 'Thème BD';
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    if (themeBtn) themeBtn.textContent = '🎨';
+    if (themeBtn) themeBtn.title = 'Thème clair';
+  }
+  localStorage.setItem('autocal-theme', theme);
+}
+
+themeBtn?.addEventListener('click', () => {
+  currentTheme = currentTheme === 'bd' ? 'light' : 'bd';
+  applyTheme(currentTheme);
 });
 
 // ══════════════════════════════════════════
