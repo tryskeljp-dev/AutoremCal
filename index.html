@@ -827,7 +827,13 @@ async function loadCalendars() {
   showLoading('Chargement des calendriers...');
   try {
     const resp = await gapi.client.calendar.calendarList.list({ maxResults: 50 });
-    allCalendars = (resp.result.items || []).filter(cal => cal.summary && cal.summary.startsWith('@'));
+    const filtered = (resp.result.items || []).filter(cal => cal.summary && cal.summary.startsWith('@'));
+    allCalendars = filtered.sort((a, b) => {
+      const aP = a.summary.toLowerCase().includes('provisoir') ? 0 : 1;
+      const bP = b.summary.toLowerCase().includes('provisoir') ? 0 : 1;
+      if (aP !== bP) return aP - bP;
+      return a.summary.localeCompare(b.summary, 'fr', { sensitivity: 'base' });
+    });
     console.log('Agendas chargés:', allCalendars.map(c => JSON.stringify(c.summary)));
     await loadEventsForWeek();
   } catch(e) {
