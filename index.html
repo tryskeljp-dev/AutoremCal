@@ -500,6 +500,15 @@
   }
   .add-btn:hover { border-color: var(--black); color: var(--black); background: var(--yellow); }
 
+  /* ── GROUP SEPARATOR ── */
+  .group-separator-row td {
+    height: 10px;
+    background: transparent;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0;
+  }
+
   /* ── DRAG & DROP ── */
   .event-pill.dragging { opacity: 0.4; transform: rotate(-2deg); }
   .event-td.drag-over {
@@ -838,11 +847,15 @@ async function loadCalendars() {
   showLoading('Chargement des calendriers...');
   try {
     const resp = await gapi.client.calendar.calendarList.list({ maxResults: 50 });
-    const filtered = (resp.result.items || []).filter(cal => cal.summary && cal.summary.startsWith('@'));
+    const filtered = (resp.result.items || []).filter(cal => cal.summary && (cal.summary.startsWith('@') || cal.summary.startsWith('#')));
     allCalendars = filtered.sort((a, b) => {
+      const aHash = a.summary.startsWith('#') ? 2 : 0;
+      const bHash = b.summary.startsWith('#') ? 2 : 0;
       const aP = a.summary.toLowerCase().includes('provisoir') ? 0 : 1;
       const bP = b.summary.toLowerCase().includes('provisoir') ? 0 : 1;
-      if (aP !== bP) return aP - bP;
+      const aScore = aHash + aP;
+      const bScore = bHash + bP;
+      if (aScore !== bScore) return aScore - bScore;
       return a.summary.localeCompare(b.summary, 'fr', { sensitivity: 'base' });
     });
     console.log('Agendas chargés:', allCalendars.map(c => JSON.stringify(c.summary)));
@@ -1045,10 +1058,18 @@ function renderCalendar() {
   html += `<tr class="spacer-row"><td style="position:sticky;left:0;background:var(--bg-spacer);z-index:4;border:none;box-shadow:none;"></td>${days.map(() => '<td></td>').join('')}</tr>`;
 
   // One row per calendar
+  let separatorAdded = false;
   allCalendars.forEach((cal, ci) => {
     const color = cal.backgroundColor || CALENDAR_COLORS[ci % CALENDAR_COLORS.length];
     const events = allEvents[cal.id] || [];
     const initial = (cal.summary || '?')[0].toUpperCase();
+    const isHash = cal.summary.startsWith('#');
+
+    // Add separator before first # calendar
+    if (isHash && !separatorAdded) {
+      separatorAdded = true;
+      html += `<tr class="group-separator-row"><td colspan="${days.length + 1}"></td></tr>`;
+    }
 
     html += `<tr>`;
     html += `<td class="person-cell">
