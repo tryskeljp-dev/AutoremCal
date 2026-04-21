@@ -292,6 +292,15 @@
   .col-person-head {
     width: 130px; text-align: left !important; padding-left: 12px !important;
     background: var(--red) !important; color: #fff !important;
+    vertical-align: middle;
+  }
+
+  .week-num-badge {
+    font-family: 'Bangers', cursive;
+    font-size: 22px; letter-spacing: 2px;
+    color: #fff;
+    text-align: center;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
   }
 
   .day-head-num { font-family: 'Bangers', cursive; font-size: 30px; letter-spacing: 1px; line-height: 1; }
@@ -467,6 +476,16 @@
     text-transform: uppercase;
   }
   .btn-save:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--shadow-color); }
+
+  .btn-duplicate {
+    padding: 10px 16px;
+    background: var(--yellow); color: var(--black);
+    border: var(--bd); font-family: 'Comic Neue', cursive;
+    font-weight: 700; font-size: 15px; cursor: pointer;
+    box-shadow: var(--sh); transition: all 0.08s;
+    text-transform: uppercase;
+  }
+  .btn-duplicate:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--shadow-color); }
 
   .btn-delete {
     padding: 10px 16px;
@@ -703,6 +722,7 @@
     </div>
     <div class="modal-actions">
       <button class="btn-save" id="btn-save">💾 Enregistrer</button>
+      <button class="btn-duplicate hidden" id="btn-duplicate">📋 Dupliquer</button>
       <button class="btn-delete hidden" id="btn-delete">🗑 Supprimer</button>
       <button class="btn-cancel" id="btn-cancel">Annuler</button>
     </div>
@@ -1006,7 +1026,17 @@ function renderCalendar() {
   html += `<div class="cal-wrapper"><table class="cal-table">`;
 
   // Header row
-  html += `<thead><tr><th class="col-person-head"></th>`;
+  // Compute ISO week number
+  function getWeekNumber(d) {
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  }
+  const weekNum = getWeekNumber(days[0]);
+
+  html += `<thead><tr><th class="col-person-head"><div class="week-num-badge">S${weekNum}</div></th>`;
   for (const day of days) {
     const todayClass = isToday(day) ? ' today-head' : '';
     const dayName = day.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.','').toUpperCase();
@@ -1220,6 +1250,7 @@ function openModalNew(calId, date) {
   document.getElementById('ev-end-time').value = '10:00';
   document.getElementById('ev-allday').checked = false;
   document.getElementById('btn-delete').classList.add('hidden');
+  document.getElementById('btn-duplicate').classList.add('hidden');
   document.getElementById('modal-overlay').classList.remove('hidden');
   setTimeout(() => document.getElementById('ev-title').focus(), 50);
 }
@@ -1244,6 +1275,7 @@ function openModalEdit(calId, ev) {
     document.getElementById('ev-end-time').value = e.split('T')[1];
   }
   document.getElementById('btn-delete').classList.remove('hidden');
+  document.getElementById('btn-duplicate').classList.remove('hidden');
   document.getElementById('modal-overlay').classList.remove('hidden');
   setTimeout(() => document.getElementById('ev-title').focus(), 50);
 }
@@ -1300,6 +1332,40 @@ document.getElementById('btn-save').addEventListener('click', async () => {
   } catch(e) {
     alert('Erreur : ' + (e.result?.error?.message || e.message));
     document.getElementById('btn-save').textContent = '💾 Enregistrer';
+  }
+});
+
+// ── DUPLICATE ──
+document.getElementById('btn-duplicate').addEventListener('click', async () => {
+  if (!editingEvent) return;
+  const ev = editingEvent;
+  const calId = document.getElementById('ev-cal').value;
+  const isAllDay = !ev.start?.dateTime;
+
+  // Shift by 1 day
+  let newStart, newEnd;
+  if (isAllDay) {
+    const s = new Date(ev.start.date); s.setDate(s.getDate() + 1);
+    const e = new Date(ev.end.date);   e.setDate(e.getDate() + 1);
+    newStart = { date: isoDate(s) };
+    newEnd   = { date: isoDate(e) };
+  } else {
+    const s = new Date(ev.start.dateTime); s.setDate(s.getDate() + 1);
+    const e = new Date(ev.end.dateTime);   e.setDate(e.getDate() + 1);
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    newStart = { dateTime: s.toISOString(), timeZone: tz };
+    newEnd   = { dateTime: e.toISOString(), timeZone: tz };
+  }
+
+  const body = { summary: ev.summary, start: newStart, end: newEnd, colorId: ev.colorId };
+  try {
+    document.getElementById('btn-duplicate').textContent = '...';
+    await gapi.client.calendar.events.insert({ calendarId: calId, resource: body });
+    closeModal();
+    await loadEventsForWeek();
+  } catch(e) {
+    alert('Erreur duplication : ' + (e.result?.error?.message || e.message));
+    document.getElementById('btn-duplicate').textContent = '📋 Dupliquer';
   }
 });
 
