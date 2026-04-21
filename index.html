@@ -500,6 +500,17 @@
   }
   .add-btn:hover { border-color: var(--black); color: var(--black); background: var(--yellow); }
 
+  /* ── DRAG & DROP ── */
+  .event-pill.dragging { opacity: 0.4; transform: rotate(-2deg); }
+  .event-td.drag-over {
+    background: var(--yellow) !important;
+    border-color: var(--black) !important;
+    border-width: 3px !important;
+    border-style: dashed !important;
+  }
+  .event-pill[draggable="true"] { cursor: grab; }
+  .event-pill[draggable="true"]:active { cursor: grabbing; }
+
   .hidden { display: none !important; }
 
   /* ── WARNING SUMMARY ── */
@@ -1052,7 +1063,13 @@ function renderCalendar() {
       const isProvisoire = (cal.summary || '').toLowerCase().includes('provisoir');
       const todayClass = isToday(day) ? ' today-td' : '';
       const dayEvents = events.filter(ev => eventInDay(ev, day));
-      html += `<td class="event-td${todayClass}">`;
+      html += `<td class="event-td${todayClass}"
+        data-cal-id="${escAttr(cal.id)}"
+        data-date="${day.toISOString()}"
+        ondragover="onDragOver(event, this)"
+        ondragleave="onDragLeave(event, this)"
+        ondrop="onDrop(event, this)"
+      >`;
       if (dayEvents.length === 0) {
         if (!isWeekend && !isProvisoire) html += `<div class="empty-warning" title="Aucune affectation">⚠️</div>`;
         html += `<button class="add-btn" onclick="openModalNew('${escAttr(cal.id)}', new Date('${day.toISOString()}'))">+ ajouter</button>`;      } else {
@@ -1064,12 +1081,16 @@ function renderCalendar() {
           const pillClass = isAllDay ? 'event-pill event-allday' : 'event-pill';
           const evJson = escAttr(JSON.stringify({id: ev.id, summary: ev.summary, start: ev.start, end: ev.end, colorId: ev.colorId}));
           html += `<div class="${pillClass}" style="background:${evColor};color:#000"
+            draggable="true"
             data-title="${escAttr(title)}"
             data-time="${escAttr(time)}"
             data-cal="${escAttr(cal.summary || cal.id)}"
+            data-cal-id="${escAttr(cal.id)}"
             onmouseenter="showTooltip(event, this)"
             onmouseleave="hideTooltip()"
             onclick="hideTooltip(); openModalEdit('${escAttr(cal.id)}', JSON.parse(this.dataset.ev))"
+            ondragstart="onDragStart(event, this)"
+            ondragend="onDragEnd(event, this)"
             data-ev="${evJson}"
           ><div class="pill-title">${escHtml(title)}</div><div class="pill-time">${escHtml(time)}</div></div>`;
         }
@@ -1273,6 +1294,100 @@ document.getElementById('btn-delete').addEventListener('click', async () => {
     alert('Erreur suppression : ' + (e.result?.error?.message || e.message));
   }
 });
+
+// ══════════════════════════════════════════
+//  DRAG & DROP
+// ══════════════════════════════════════════
+let dragData = null;
+
+function onDragStart(e, el) {
+  hideTooltip();
+  dragData = {
+    ev: JSON.parse(el.dataset.ev),
+    calId: el.dataset.calId,
+  };
+  el.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', el.dataset.ev);
+}
+
+function onDragEnd(e, el) {
+  el.classList.remove('dragging');
+  document.querySelectorAll('.event-td.drag-over').forEach(td => td.classList.remove('drag-over'));
+}
+
+function onDragOver(e, td) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.event-td.drag-over').forEach(t => t.classList.remove('drag-over'));
+  td.classList.add('drag-over');
+}
+
+function onDragLeave(e, td) {
+  td.classList.remove('drag-over');
+}
+
+async function onDrop(e, td) {
+  e.preventDefault();
+  td.classList.remove('drag-over');
+  if (!dragData) return;
+
+  const { ev, calId } = dragData;
+  const targetCalId = td.dataset.calId;
+  const targetDate = new Date(td.dataset.date);
+  dragData = null;
+
+  const isAllDay = !ev.start?.dateTime;
+
+  // Calculate duration to preserve it
+  const origStart = new Date(ev.start?.dateTime || ev.start?.date);
+  const origEnd   = new Date(ev.end?.dateTime   || ev.end?.date);
+  const duration  = origEnd - origStart; // ms
+
+  let newStart, newEnd;
+
+  if (isAllDay) {
+    newStart = { date: isoDate(targetDate) };
+    const endDate = new Date(targetDate);
+    endDate.setDate(endDate.getDate() + Math.round(duration / 86400000));
+    newEnd = { date: isoDate(endDate) };
+  } else {
+    const newStartDt = new Date(targetDate);
+    newStartDt.setHours(origStart.getHours(), origStart.getMinutes(), 0, 0);
+    const newEndDt = new Date(newStartDt.getTime() + duration);
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    newStart = { dateTime: newStartDt.toISOString(), timeZone: tz };
+    newEnd   = { dateTime: newEndDt.toISOString(),   timeZone: tz };
+  }
+
+  // Show visual feedback
+  const pill = document.querySelector(`[data-ev*="${CSS.escape(ev.id)}"]`);
+
+  try {
+    // If dropped on same calendar, just update the event
+    if (calId === targetCalId) {
+      await gapi.client.calendar.events.patch({
+        calendarId: calId,
+        eventId: ev.id,
+        resource: { start: newStart, end: newEnd }
+      });
+    } else {
+      // Move to different calendar: insert then delete
+      const newBody = {
+        summary: ev.summary,
+        start: newStart,
+        end: newEnd,
+        colorId: ev.colorId,
+      };
+      await gapi.client.calendar.events.insert({ calendarId: targetCalId, resource: newBody });
+      await gapi.client.calendar.events.delete({ calendarId: calId, eventId: ev.id });
+    }
+    await loadEventsForWeek();
+  } catch(err) {
+    alert('Erreur déplacement : ' + (err.result?.error?.message || err.message));
+    await loadEventsForWeek();
+  }
+}
 </script>
 </body>
 </html>
