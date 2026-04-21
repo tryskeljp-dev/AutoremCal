@@ -847,10 +847,10 @@ async function loadCalendars() {
   showLoading('Chargement des calendriers...');
   try {
     const resp = await gapi.client.calendar.calendarList.list({ maxResults: 50 });
-    const filtered = (resp.result.items || []).filter(cal => cal.summary && (cal.summary.startsWith('@') || cal.summary.startsWith('#')));
+    const filtered = (resp.result.items || []).filter(cal => cal.summary && (cal.summary.startsWith('@') || cal.summary.includes('#')));
     allCalendars = filtered.sort((a, b) => {
-      const aHash = a.summary.startsWith('#') ? 2 : 0;
-      const bHash = b.summary.startsWith('#') ? 2 : 0;
+      const aHash = a.summary.includes('#') ? 2 : 0;
+      const bHash = b.summary.includes('#') ? 2 : 0;
       const aP = a.summary.toLowerCase().includes('provisoir') ? 0 : 1;
       const bP = b.summary.toLowerCase().includes('provisoir') ? 0 : 1;
       const aScore = aHash + aP;
@@ -1063,7 +1063,7 @@ function renderCalendar() {
     const color = cal.backgroundColor || CALENDAR_COLORS[ci % CALENDAR_COLORS.length];
     const events = allEvents[cal.id] || [];
     const initial = (cal.summary || '?')[0].toUpperCase();
-    const isHash = cal.summary.startsWith('#');
+    const isHash = cal.summary.includes('#');
 
     // Add separator before first # calendar
     if (isHash && !separatorAdded) {
