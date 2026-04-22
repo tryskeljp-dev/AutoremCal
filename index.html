@@ -1140,8 +1140,8 @@ function renderCalendar() {
           const time = fmtTime(ev);
           const pillClass = isAllDay ? 'event-pill event-allday' : 'event-pill';
           const evJson = escAttr(JSON.stringify({id: ev.id, summary: ev.summary, start: ev.start, end: ev.end, colorId: ev.colorId, description: ev.description}));
-          const modMatch = ev.description && ev.description.match(/\[modifié par: (.+?) — (.+?)\]/);
-          const modBy = modMatch ? `<div class="pill-mod">✏️ ${escHtml(modMatch[1])} · ${escHtml(modMatch[2])}</div>` : '';
+          const modMatch = ev.description && ev.description.match(/\[créé par: (.+?) — (.+?)\]/);
+          const modBy = modMatch ? `<div class="pill-mod">👤 ${escHtml(modMatch[1])} · ${escHtml(modMatch[2])}</div>` : '';
           html += `<div class="${pillClass}" style="background:${evColor};color:#000"
             draggable="true"
             data-title="${escAttr(title)}"
@@ -1319,7 +1319,7 @@ document.getElementById('btn-save').addEventListener('click', async () => {
   const endTime = document.getElementById('ev-end-time').value;
 
   let body;
-  const modTag = `[modifié par: ${currentUser?.name || currentUser?.email || 'Inconnu'} — ${new Date().toLocaleString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}]`;
+  const modTag = `[créé par: ${currentUser?.name || currentUser?.email || 'Inconnu'} — ${new Date().toLocaleString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}]`;
   if (isAllDay) {
     const ed = new Date(endDate); ed.setDate(ed.getDate()+1);
     body = { summary: title, start: { date: startDate }, end: { date: isoDate(ed) }, description: modTag };
@@ -1369,7 +1369,7 @@ document.getElementById('btn-duplicate').addEventListener('click', async () => {
     newEnd   = { dateTime: e.toISOString(), timeZone: tz };
   }
 
-  const dupModTag = `[modifié par: ${currentUser?.name || currentUser?.email || 'Inconnu'} — ${new Date().toLocaleString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}]`;
+  const dupModTag = `[créé par: ${currentUser?.name || currentUser?.email || 'Inconnu'} — ${new Date().toLocaleString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}]`;
   const body = { summary: ev.summary, start: newStart, end: newEnd, colorId: ev.colorId, description: dupModTag };
   try {
     document.getElementById('btn-duplicate').textContent = '...';
@@ -1464,7 +1464,7 @@ async function onDrop(e, td) {
   const pill = document.querySelector(`[data-ev*="${CSS.escape(ev.id)}"]`);
 
   try {
-    const dragModTag = `[modifié par: ${currentUser?.name || currentUser?.email || 'Inconnu'} — ${new Date().toLocaleString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}]`;
+    const dragModTag = `[créé par: ${currentUser?.name || currentUser?.email || 'Inconnu'} — ${new Date().toLocaleString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}]`;
     if (calId === targetCalId) {
       await gapi.client.calendar.events.patch({
         calendarId: calId,
