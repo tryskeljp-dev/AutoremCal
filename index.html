@@ -701,7 +701,7 @@
       </div>
       <div class="modal-field">
         <label>Heure début</label>
-        <input type="time" id="ev-start-time" value="09:00">
+        <input type="time" id="ev-start-time" value="08:00">
       </div>
     </div>
     <div class="modal-row">
@@ -711,7 +711,7 @@
       </div>
       <div class="modal-field">
         <label>Heure fin</label>
-        <input type="time" id="ev-end-time" value="10:00">
+        <input type="time" id="ev-end-time" value="17:00">
       </div>
     </div>
     <div class="modal-field">
@@ -1246,8 +1246,8 @@ function openModalNew(calId, date) {
   const ds = isoDate(date);
   document.getElementById('ev-start-date').value = ds;
   document.getElementById('ev-end-date').value = ds;
-  document.getElementById('ev-start-time').value = '09:00';
-  document.getElementById('ev-end-time').value = '10:00';
+  document.getElementById('ev-start-time').value = '08:00';
+  document.getElementById('ev-end-time').value = '17:00';
   document.getElementById('ev-allday').checked = false;
   document.getElementById('btn-delete').classList.add('hidden');
   document.getElementById('btn-duplicate').classList.add('hidden');
