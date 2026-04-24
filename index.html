@@ -1148,8 +1148,7 @@ function renderCalendar() {
       >`;
       if (dayEvents.length === 0) {
         if (!isWeekend && !isProvisoire) html += `<div class="empty-warning" title="Aucune affectation">⚠️</div>`;
-        html += `<button class="add-btn" onclick="openModalNew('${escAttr(cal.id)}', new Date('${day.toISOString()}'))">+ ajouter</button>`;      } else {
-        for (const ev of dayEvents) {
+        html += `<button class="add-btn" onclick="openModalNew('${escAttr(cal.id)}', new Date('${day.toISOString()}'))">+ ajouter</button>`;      } else {        for (const ev of dayEvents) {
           const isAllDay = !ev.start?.dateTime;
           const evColor = ev.colorId ? getEventColor(ev.colorId) : color;
           const title = ev.summary || '(sans titre)';
@@ -1171,7 +1170,10 @@ function renderCalendar() {
             data-ev="${evJson}"
           ><div class="pill-title">${escHtml(title)}</div><div class="pill-time">${escHtml(time)}</div>${locLine}</div>`;
         }
-        html += `<button class="add-btn" onclick="openModalNew('${escAttr(cal.id)}', new Date('${day.toISOString()}'))">+</button>`;
+        // Find end time of last event of the day
+        const lastEv = dayEvents[dayEvents.length - 1];
+        const lastEndIso = lastEv?.end?.dateTime || null;
+        html += `<button class="add-btn" onclick="openModalNew('${escAttr(cal.id)}', new Date('${day.toISOString()}'), ${lastEndIso ? `'${lastEndIso}'` : 'null'})">+</button>`;
       }
       html += `</td>`;
     }
@@ -1263,7 +1265,7 @@ function populateCalSelect(selectedId) {
   ).join('');
 }
 
-function openModalNew(calId, date) {
+function openModalNew(calId, date, lastEndIso = null) {
   editingEvent = null;
   editingCalId = calId;
   document.getElementById('modal-title').textContent = 'NOUVEL ÉVÉNEMENT';
@@ -1272,10 +1274,25 @@ function openModalNew(calId, date) {
   const ds = isoDate(date);
   document.getElementById('ev-start-date').value = ds;
   document.getElementById('ev-end-date').value = ds;
-  document.getElementById('ev-start-time').value = '08:00';
-  document.getElementById('ev-end-time').value = '17:00';
+
+  if (lastEndIso) {
+    const lastEnd = new Date(lastEndIso);
+    const pad = n => String(n).padStart(2,'0');
+    const startH = `${pad(lastEnd.getHours())}:${pad(lastEnd.getMinutes())}`;
+    // Default duration: end = start + 9h, capped at 17:00 if possible
+    const endDate = new Date(lastEnd.getTime() + 9 * 3600000);
+    const endH = `${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`;
+    document.getElementById('ev-start-time').value = startH;
+    document.getElementById('ev-end-time').value = endH;
+  } else {
+    document.getElementById('ev-start-time').value = '08:00';
+    document.getElementById('ev-end-time').value = '17:00';
+  }
+
   document.getElementById('ev-allday').checked = false;
   document.getElementById('ev-location').value = '';
+  const mapsLink = document.getElementById('maps-link');
+  mapsLink.style.display = 'none';
   document.getElementById('btn-delete').classList.add('hidden');
   document.getElementById('btn-duplicate').classList.add('hidden');
   document.getElementById('modal-overlay').classList.remove('hidden');
