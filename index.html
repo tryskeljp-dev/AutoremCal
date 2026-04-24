@@ -371,6 +371,12 @@
     font-style: italic;
   }
 
+  .pill-loc-link {
+    color: inherit;
+    text-decoration: underline dotted;
+  }
+  .pill-loc-link:hover { opacity: 1; text-decoration: underline; }
+
   .event-allday {
     border: 2px solid var(--black);
     padding: 4px 7px; white-space: normal; display: block;
@@ -730,7 +736,13 @@
     </div>
     <div class="modal-field">
       <label>📍 Lieu</label>
-      <input type="text" id="ev-location" placeholder="Adresse ou lieu...">
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input type="text" id="ev-location" placeholder="Adresse ou lieu..." style="flex:1;">
+        <a id="maps-link" href="#" target="_blank"
+          style="display:none;padding:8px 10px;background:var(--blue);color:#fff;border:var(--bd);box-shadow:var(--sh);font-size:13px;white-space:nowrap;text-decoration:none;font-weight:700;">
+          🗺 Maps
+        </a>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn-save" id="btn-save">💾 Enregistrer</button>
@@ -1144,7 +1156,7 @@ function renderCalendar() {
           const time = fmtTime(ev);
           const pillClass = isAllDay ? 'event-pill event-allday' : 'event-pill';
           const evJson = escAttr(JSON.stringify({id: ev.id, summary: ev.summary, start: ev.start, end: ev.end, colorId: ev.colorId, location: ev.location}));
-          const locLine = ev.location ? `<div class="pill-loc">📍 ${escHtml(ev.location)}</div>` : '';
+          const locLine = ev.location ? `<div class="pill-loc"><a class="pill-loc-link" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location)}" target="_blank" onclick="event.stopPropagation()">📍 ${escHtml(ev.location)}</a></div>` : '';
           html += `<div class="${pillClass}" style="background:${evColor};color:#000"
             draggable="true"
             data-title="${escAttr(title)}"
@@ -1290,6 +1302,13 @@ function openModalEdit(calId, ev) {
     document.getElementById('ev-end-time').value = e.split('T')[1];
   }
   document.getElementById('ev-location').value = ev.location || '';
+  const mapsLink = document.getElementById('maps-link');
+  if (ev.location) {
+    mapsLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location)}`;
+    mapsLink.style.display = 'block';
+  } else {
+    mapsLink.style.display = 'none';
+  }
   document.getElementById('btn-delete').classList.remove('hidden');
   document.getElementById('btn-duplicate').classList.remove('hidden');
   document.getElementById('modal-overlay').classList.remove('hidden');
@@ -1301,6 +1320,16 @@ function closeModal() {
   editingEvent = null;
   editingCalId = null;
 }
+
+document.getElementById('ev-location').addEventListener('input', function() {
+  const mapsLink = document.getElementById('maps-link');
+  if (this.value.trim()) {
+    mapsLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(this.value.trim())}`;
+    mapsLink.style.display = 'block';
+  } else {
+    mapsLink.style.display = 'none';
+  }
+});
 
 document.getElementById('btn-cancel').addEventListener('click', closeModal);
 document.getElementById('modal-overlay').addEventListener('click', e => {
