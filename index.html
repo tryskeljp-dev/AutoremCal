@@ -363,6 +363,14 @@
     display: block;
   }
 
+  .pill-loc {
+    font-size: 10px; font-weight: 400;
+    opacity: 0.7; margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    display: block;
+    font-style: italic;
+  }
+
   .event-allday {
     border: 2px solid var(--black);
     padding: 4px 7px; white-space: normal; display: block;
@@ -720,6 +728,10 @@
         Journée entière
       </label>
     </div>
+    <div class="modal-field">
+      <label>📍 Lieu</label>
+      <input type="text" id="ev-location" placeholder="Adresse ou lieu...">
+    </div>
     <div class="modal-actions">
       <button class="btn-save" id="btn-save">💾 Enregistrer</button>
       <button class="btn-duplicate hidden" id="btn-duplicate">📋 Dupliquer</button>
@@ -901,6 +913,7 @@ async function loadEventsForWeek() {
         singleEvents: true,
         orderBy: 'startTime',
         maxResults: 500,
+        fields: 'items(id,summary,start,end,colorId,location)',
       });
       allEvents[cal.id] = resp.result.items || [];
     } catch(e) {
@@ -1130,7 +1143,8 @@ function renderCalendar() {
           const title = ev.summary || '(sans titre)';
           const time = fmtTime(ev);
           const pillClass = isAllDay ? 'event-pill event-allday' : 'event-pill';
-          const evJson = escAttr(JSON.stringify({id: ev.id, summary: ev.summary, start: ev.start, end: ev.end, colorId: ev.colorId}));
+          const evJson = escAttr(JSON.stringify({id: ev.id, summary: ev.summary, start: ev.start, end: ev.end, colorId: ev.colorId, location: ev.location}));
+          const locLine = ev.location ? `<div class="pill-loc">📍 ${escHtml(ev.location)}</div>` : '';
           html += `<div class="${pillClass}" style="background:${evColor};color:#000"
             draggable="true"
             data-title="${escAttr(title)}"
@@ -1143,7 +1157,7 @@ function renderCalendar() {
             ondragstart="onDragStart(event, this)"
             ondragend="onDragEnd(event, this)"
             data-ev="${evJson}"
-          ><div class="pill-title">${escHtml(title)}</div><div class="pill-time">${escHtml(time)}</div></div>`;
+          ><div class="pill-title">${escHtml(title)}</div><div class="pill-time">${escHtml(time)}</div>${locLine}</div>`;
         }
         html += `<button class="add-btn" onclick="openModalNew('${escAttr(cal.id)}', new Date('${day.toISOString()}'))">+</button>`;
       }
@@ -1249,6 +1263,7 @@ function openModalNew(calId, date) {
   document.getElementById('ev-start-time').value = '08:00';
   document.getElementById('ev-end-time').value = '17:00';
   document.getElementById('ev-allday').checked = false;
+  document.getElementById('ev-location').value = '';
   document.getElementById('btn-delete').classList.add('hidden');
   document.getElementById('btn-duplicate').classList.add('hidden');
   document.getElementById('modal-overlay').classList.remove('hidden');
@@ -1274,6 +1289,7 @@ function openModalEdit(calId, ev) {
     document.getElementById('ev-end-date').value = e.split('T')[0];
     document.getElementById('ev-end-time').value = e.split('T')[1];
   }
+  document.getElementById('ev-location').value = ev.location || '';
   document.getElementById('btn-delete').classList.remove('hidden');
   document.getElementById('btn-duplicate').classList.remove('hidden');
   document.getElementById('modal-overlay').classList.remove('hidden');
@@ -1306,16 +1322,18 @@ document.getElementById('btn-save').addEventListener('click', async () => {
   const endDate = document.getElementById('ev-end-date').value;
   const startTime = document.getElementById('ev-start-time').value;
   const endTime = document.getElementById('ev-end-time').value;
+  const location = document.getElementById('ev-location').value.trim();
 
   let body;
   if (isAllDay) {
     const ed = new Date(endDate); ed.setDate(ed.getDate()+1);
-    body = { summary: title, start: { date: startDate }, end: { date: isoDate(ed) } };
+    body = { summary: title, start: { date: startDate }, end: { date: isoDate(ed) }, location };
   } else {
     body = {
       summary: title,
       start: { dateTime: `${startDate}T${startTime}:00`, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
       end:   { dateTime: `${endDate}T${endTime}:00`,   timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
+      location,
     };
   }
 
