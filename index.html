@@ -1279,11 +1279,12 @@ function openModalNew(calId, date, lastEndIso = null) {
     const lastEnd = new Date(lastEndIso);
     const pad = n => String(n).padStart(2,'0');
     const startH = `${pad(lastEnd.getHours())}:${pad(lastEnd.getMinutes())}`;
-    // Default duration: end = start + 9h, capped at 17:00 if possible
     const endDate = new Date(lastEnd.getTime() + 9 * 3600000);
-    const endH = `${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`;
+    const cappedEnd = (endDate.getHours() > 17 || (endDate.getHours() === 17 && endDate.getMinutes() > 0))
+      ? '17:00'
+      : `${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`;
     document.getElementById('ev-start-time').value = startH;
-    document.getElementById('ev-end-time').value = endH;
+    document.getElementById('ev-end-time').value = cappedEnd;
   } else {
     document.getElementById('ev-start-time').value = '08:00';
     document.getElementById('ev-end-time').value = '17:00';
