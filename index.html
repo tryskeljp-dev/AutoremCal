@@ -574,6 +574,25 @@
     padding: 0;
   }
 
+  /* ── DRAG EDGE ZONES ── */
+  .drag-edge-left, .drag-edge-right {
+    position: fixed;
+    top: 0; bottom: 0;
+    width: 80px;
+    z-index: 150;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+  }
+  .drag-edge-left  { left: 0;  background: linear-gradient(to right, rgba(232,39,42,0.3), transparent); }
+  .drag-edge-right { right: 0; background: linear-gradient(to left,  rgba(232,39,42,0.3), transparent); }
+  body.dragging .drag-edge-left,
+  body.dragging .drag-edge-right { opacity: 1; pointer-events: none; }
+
   /* ── DRAG & DROP ── */
   .event-pill.dragging { opacity: 0.4; transform: rotate(-2deg); }
   .event-td.drag-over {
@@ -721,6 +740,9 @@
   <!-- Calendar view (hidden until signed in) -->
   <div id="cal-view" style="display:none;"></div>
 </main>
+
+<div class="drag-edge-left">◀</div>
+<div class="drag-edge-right">▶</div>
 
 <div class="tooltip" id="tooltip">
   <div class="tooltip-title" id="tt-title"></div>
@@ -1625,6 +1647,40 @@ document.getElementById('btn-delete').addEventListener('click', async () => {
 //  DRAG & DROP
 // ══════════════════════════════════════════
 let dragData = null;
+let edgeScrollTimer = null;
+const EDGE_ZONE = 80; // px from edge to trigger week change
+const EDGE_DELAY = 800; // ms before switching week
+
+function startEdgeScroll(direction) {
+  if (edgeScrollTimer) return;
+  edgeScrollTimer = setTimeout(async () => {
+    edgeScrollTimer = null;
+    if (!dragData) return;
+    weekOffset += direction;
+    await loadEventsForWeek();
+  }, EDGE_DELAY);
+}
+
+function stopEdgeScroll() {
+  if (edgeScrollTimer) { clearTimeout(edgeScrollTimer); edgeScrollTimer = null; }
+}
+
+document.addEventListener('dragover', (e) => {
+  if (!dragData) return;
+  const x = e.clientX;
+  const w = window.innerWidth;
+  if (x < EDGE_ZONE) {
+    startEdgeScroll(-1);
+  } else if (x > w - EDGE_ZONE) {
+    startEdgeScroll(1);
+  } else {
+    stopEdgeScroll();
+  }
+});
+
+document.addEventListener('dragend', () => {
+  stopEdgeScroll();
+});
 
 function onDragStart(e, el) {
   hideTooltip();
@@ -1633,12 +1689,15 @@ function onDragStart(e, el) {
     calId: el.dataset.calId,
   };
   el.classList.add('dragging');
+  document.body.classList.add('dragging');
   e.dataTransfer.effectAllowed = 'move';
   e.dataTransfer.setData('text/plain', el.dataset.ev);
 }
 
 function onDragEnd(e, el) {
   el.classList.remove('dragging');
+  document.body.classList.remove('dragging');
+  stopEdgeScroll();
   document.querySelectorAll('.event-td.drag-over').forEach(td => td.classList.remove('drag-over'));
 }
 
