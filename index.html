@@ -779,6 +779,11 @@
         </a>
       </div>
     </div>
+    <div class="modal-field">
+      <label>📝 Description</label>
+      <textarea id="ev-description" placeholder="Notes, informations complémentaires..." rows="3"
+        style="width:100%;padding:9px 12px;border:var(--bd);background:var(--bg-cell);font-family:'Comic Neue',cursive;font-weight:700;font-size:14px;color:var(--black);outline:none;box-shadow:var(--sh);resize:vertical;"></textarea>
+    </div>
     <div class="modal-actions">
       <button class="btn-save" id="btn-save">💾 Enregistrer</button>
       <button class="btn-duplicate hidden" id="btn-duplicate">📋 Dupliquer</button>
@@ -1452,6 +1457,7 @@ function openModalNew(calId, date, lastEndIso = null) {
 
   document.getElementById('ev-allday').checked = false;
   document.getElementById('ev-location').value = '';
+  document.getElementById('ev-description').value = '';
   const mapsLink = document.getElementById('maps-link');
   mapsLink.style.display = 'none';
   document.getElementById('btn-delete').classList.add('hidden');
