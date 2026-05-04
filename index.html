@@ -965,7 +965,7 @@ async function loadEventsForWeek() {
         singleEvents: true,
         orderBy: 'startTime',
         maxResults: 500,
-        fields: 'items(id,summary,start,end,colorId,location)',
+        fields: 'items(id,summary,start,end,colorId,location,description)',
       });
       allEvents[cal.id] = resp.result.items || [];
     } catch(e) {
@@ -1073,7 +1073,11 @@ function renderAutocomplete(results, inputEl) {
 
 function selectDossier(item) {
   const titleInput = document.getElementById('ev-title');
-  titleInput.value = item.dataset.title;
+  const num = item.dataset.num;
+  const client = item.dataset.client;
+  const chantier = item.dataset.title;
+  const devis = item.dataset.devis;
+  titleInput.value = `[${num}] [Devis ${devis}] ${client} - ${chantier}`;
   document.getElementById('autocomplete-list').style.display = 'none';
   acActiveIndex = -1;
   titleInput.focus();
@@ -1319,7 +1323,7 @@ function renderCalendar() {
           const title = ev.summary || '(sans titre)';
           const time = fmtTime(ev);
           const pillClass = isAllDay ? 'event-pill event-allday' : 'event-pill';
-          const evJson = escAttr(JSON.stringify({id: ev.id, summary: ev.summary, start: ev.start, end: ev.end, colorId: ev.colorId, location: ev.location}));
+          const evJson = escAttr(JSON.stringify({id: ev.id, summary: ev.summary, start: ev.start, end: ev.end, colorId: ev.colorId, location: ev.location, description: ev.description}));
           const locLine = ev.location ? `<div class="pill-loc"><a class="pill-loc-link" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location)}" target="_blank" onclick="event.stopPropagation()">📍 ${escHtml(ev.location)}</a></div>` : '';
           html += `<div class="${pillClass}" style="background:${evColor};color:#000"
             draggable="true"
@@ -1487,6 +1491,7 @@ function openModalEdit(calId, ev) {
     document.getElementById('ev-end-time').value = e.split('T')[1];
   }
   document.getElementById('ev-location').value = ev.location || '';
+  document.getElementById('ev-description').value = ev.description || '';
   const mapsLink = document.getElementById('maps-link');
   if (ev.location) {
     mapsLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location)}`;
@@ -1538,17 +1543,19 @@ document.getElementById('btn-save').addEventListener('click', async () => {
   const startTime = document.getElementById('ev-start-time').value;
   const endTime = document.getElementById('ev-end-time').value;
   const location = document.getElementById('ev-location').value.trim();
+  const description = document.getElementById('ev-description').value.trim();
 
   let body;
   if (isAllDay) {
     const ed = new Date(endDate); ed.setDate(ed.getDate()+1);
-    body = { summary: title, start: { date: startDate }, end: { date: isoDate(ed) }, location };
+    body = { summary: title, start: { date: startDate }, end: { date: isoDate(ed) }, location, description };
   } else {
     body = {
       summary: title,
       start: { dateTime: `${startDate}T${startTime}:00`, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
       end:   { dateTime: `${endDate}T${endTime}:00`,   timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
       location,
+      description,
     };
   }
 
@@ -1589,7 +1596,7 @@ document.getElementById('btn-duplicate').addEventListener('click', async () => {
     newEnd   = { dateTime: e.toISOString(), timeZone: tz };
   }
 
-  const body = { summary: ev.summary, start: newStart, end: newEnd, colorId: ev.colorId };
+  const body = { summary: ev.summary, start: newStart, end: newEnd, colorId: ev.colorId, location: ev.location || '', description: ev.description || '' };
   try {
     document.getElementById('btn-duplicate').textContent = '...';
     await gapi.client.calendar.events.insert({ calendarId: calId, resource: body });
@@ -1687,7 +1694,7 @@ async function onDrop(e, td) {
       await gapi.client.calendar.events.patch({
         calendarId: calId,
         eventId: ev.id,
-        resource: { start: newStart, end: newEnd, location: ev.location || '' }
+        resource: { start: newStart, end: newEnd, location: ev.location || '', description: ev.description || '' }
       });
     } else {
       const newBody = {
@@ -1696,6 +1703,7 @@ async function onDrop(e, td) {
         end: newEnd,
         colorId: ev.colorId,
         location: ev.location || '',
+        description: ev.description || '',
       };
       await gapi.client.calendar.events.insert({ calendarId: targetCalId, resource: newBody });
       await gapi.client.calendar.events.delete({ calendarId: calId, eventId: ev.id });
