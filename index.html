@@ -624,6 +624,8 @@
   .multi-btn-delete:hover { background: #ff4444; transform: translate(-1px,-1px); }
   .multi-btn-move { background: var(--blue); color: #fff; }
   .multi-btn-move:hover { background: #3367d6; transform: translate(-1px,-1px); }
+  .multi-btn-duplicate { background: var(--yellow); color: var(--black); border-color: var(--yellow); }
+  .multi-btn-duplicate:hover { background: #ffd000; transform: translate(-1px,-1px); }
   .multi-btn-cancel { background: transparent; color: var(--yellow); border-color: var(--yellow); }
   .multi-btn-cancel:hover { background: rgba(255,255,255,0.1); }
 
@@ -823,6 +825,7 @@
 <div id="multi-action-bar">
   <span class="multi-count" id="multi-count">0 sélectionnés</span>
   <button class="multi-btn multi-btn-move" id="multi-btn-move">📅 Déplacer</button>
+  <button class="multi-btn multi-btn-duplicate" id="multi-btn-duplicate">📋 Dupliquer</button>
   <button class="multi-btn multi-btn-delete" id="multi-btn-delete">🗑 Supprimer</button>
   <button class="multi-btn multi-btn-cancel" id="multi-btn-cancel">✕ Annuler</button>
 </div>
@@ -1703,37 +1706,55 @@ document.getElementById('btn-save').addEventListener('click', async () => {
 });
 
 // ── DUPLICATE ──
-document.getElementById('btn-duplicate').addEventListener('click', async () => {
+document.getElementById('btn-duplicate').addEventListener('click', () => {
   if (!editingEvent) return;
   const ev = editingEvent;
   const calId = document.getElementById('ev-cal').value;
-  const isAllDay = !ev.start?.dateTime;
+  closeModal();
 
-  // Shift by 1 day
-  let newStart, newEnd;
-  if (isAllDay) {
-    const s = new Date(ev.start.date); s.setDate(s.getDate() + 1);
-    const e = new Date(ev.end.date);   e.setDate(e.getDate() + 1);
-    newStart = { date: isoDate(s) };
-    newEnd   = { date: isoDate(e) };
-  } else {
-    const s = new Date(ev.start.dateTime); s.setDate(s.getDate() + 1);
-    const e = new Date(ev.end.dateTime);   e.setDate(e.getDate() + 1);
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(10,10,10,0.6);z-index:500;display:flex;align-items:center;justify-content:center;';
+  overlay.innerHTML = `
+    <div style="background:var(--bg-modal);border:var(--bd-thick);box-shadow:var(--sh-lg);padding:28px 32px;width:100%;max-width:360px;">
+      <h3 style="font-family:'Bangers',cursive;font-size:24px;letter-spacing:2px;margin-bottom:20px;text-shadow:2px 2px 0 var(--yellow);color:var(--black);">DUPLIQUER</h3>
+      <p style="font-family:'Comic Neue',cursive;font-weight:700;font-size:14px;margin-bottom:20px;color:var(--black);">Choisissez quand dupliquer :</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button id="sdup-tomorrow" style="padding:12px 16px;background:var(--blue);color:#fff;border:var(--bd);font-family:'Comic Neue',cursive;font-weight:700;font-size:15px;cursor:pointer;box-shadow:var(--sh);text-transform:uppercase;">📅 Lendemain (+1 jour)</button>
+        <button id="sdup-nextweek" style="padding:12px 16px;background:var(--yellow);color:var(--black);border:var(--bd);font-family:'Comic Neue',cursive;font-weight:700;font-size:15px;cursor:pointer;box-shadow:var(--sh);text-transform:uppercase;">📆 Semaine suivante (+7 jours)</button>
+        <button id="sdup-cancel" style="padding:10px 16px;background:transparent;color:var(--black);border:var(--bd);font-family:'Comic Neue',cursive;font-weight:700;font-size:14px;cursor:pointer;text-transform:uppercase;">✕ Annuler</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  async function doSingleDup(daysOffset) {
+    overlay.remove();
+    const isAllDay = !ev.start?.dateTime;
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    newStart = { dateTime: s.toISOString(), timeZone: tz };
-    newEnd   = { dateTime: e.toISOString(), timeZone: tz };
+    let newStart, newEnd;
+    if (isAllDay) {
+      const s = new Date(ev.start.date); s.setDate(s.getDate() + daysOffset);
+      const e = new Date(ev.end.date);   e.setDate(e.getDate() + daysOffset);
+      newStart = { date: isoDate(s) };
+      newEnd   = { date: isoDate(e) };
+    } else {
+      const s = new Date(ev.start.dateTime); s.setDate(s.getDate() + daysOffset);
+      const e = new Date(ev.end.dateTime);   e.setDate(e.getDate() + daysOffset);
+      newStart = { dateTime: s.toISOString(), timeZone: tz };
+      newEnd   = { dateTime: e.toISOString(), timeZone: tz };
+    }
+    try {
+      await gapi.client.calendar.events.insert({
+        calendarId: calId,
+        resource: { summary: ev.summary, start: newStart, end: newEnd, colorId: ev.colorId, location: ev.location || '', description: ev.description || '' }
+      });
+      await loadEventsForWeek();
+    } catch(err) { alert('Erreur duplication : ' + (err.result?.error?.message || err.message)); }
   }
 
-  const body = { summary: ev.summary, start: newStart, end: newEnd, colorId: ev.colorId, location: ev.location || '', description: ev.description || '' };
-  try {
-    document.getElementById('btn-duplicate').textContent = '...';
-    await gapi.client.calendar.events.insert({ calendarId: calId, resource: body });
-    closeModal();
-    await loadEventsForWeek();
-  } catch(e) {
-    alert('Erreur duplication : ' + (e.result?.error?.message || e.message));
-    document.getElementById('btn-duplicate').textContent = '📋 Dupliquer';
-  }
+  document.getElementById('sdup-tomorrow').addEventListener('click', () => doSingleDup(1));
+  document.getElementById('sdup-nextweek').addEventListener('click', () => doSingleDup(7));
+  document.getElementById('sdup-cancel').addEventListener('click', () => overlay.remove());
 });
 
 // ── DELETE ──
@@ -1844,6 +1865,79 @@ document.addEventListener('mouseup', (e) => {
   });
   updateMultiBar();
 });
+
+// ── MULTI DUPLICATE ──
+document.getElementById('multi-btn-duplicate').addEventListener('click', () => {
+  if (!selectedEvents.length) return;
+  showDuplicateChoiceModal();
+});
+
+function showDuplicateChoiceModal() {
+  const existing = document.getElementById('dup-choice-overlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'dup-choice-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(10,10,10,0.6);z-index:500;display:flex;align-items:center;justify-content:center;';
+  overlay.innerHTML = `
+    <div style="background:var(--bg-modal);border:var(--bd-thick);box-shadow:var(--sh-lg);padding:28px 32px;width:100%;max-width:360px;">
+      <h3 style="font-family:'Bangers',cursive;font-size:24px;letter-spacing:2px;margin-bottom:20px;text-shadow:2px 2px 0 var(--yellow);color:var(--black);">DUPLIQUER ${selectedEvents.length} ÉVÉNEMENT(S)</h3>
+      <p style="font-family:'Comic Neue',cursive;font-weight:700;font-size:14px;margin-bottom:20px;color:var(--black);">Choisissez quand dupliquer :</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button id="dup-tomorrow" style="padding:12px 16px;background:var(--blue);color:#fff;border:var(--bd);font-family:'Comic Neue',cursive;font-weight:700;font-size:15px;cursor:pointer;box-shadow:var(--sh);text-transform:uppercase;">
+          📅 Lendemain (+1 jour)
+        </button>
+        <button id="dup-nextweek" style="padding:12px 16px;background:var(--yellow);color:var(--black);border:var(--bd);font-family:'Comic Neue',cursive;font-weight:700;font-size:15px;cursor:pointer;box-shadow:var(--sh);text-transform:uppercase;">
+          📆 Semaine suivante (+7 jours)
+        </button>
+        <button id="dup-cancel" style="padding:10px 16px;background:transparent;color:var(--black);border:var(--bd);font-family:'Comic Neue',cursive;font-weight:700;font-size:14px;cursor:pointer;text-transform:uppercase;">
+          ✕ Annuler
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  document.getElementById('dup-tomorrow').addEventListener('click', () => {
+    overlay.remove(); executeDuplicate(1);
+  });
+  document.getElementById('dup-nextweek').addEventListener('click', () => {
+    overlay.remove(); executeDuplicate(7);
+  });
+  document.getElementById('dup-cancel').addEventListener('click', () => {
+    overlay.remove();
+  });
+}
+
+async function executeDuplicate(daysOffset) {
+  multiBar.classList.remove('visible');
+  showLoading(`Duplication de ${selectedEvents.length} événement(s)...`);
+
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  for (const { ev, calId } of selectedEvents) {
+    try {
+      const isAllDay = !ev.start?.dateTime;
+      let newStart, newEnd;
+      if (isAllDay) {
+        const s = new Date(ev.start.date); s.setDate(s.getDate() + daysOffset);
+        const e = new Date(ev.end.date);   e.setDate(e.getDate() + daysOffset);
+        newStart = { date: isoDate(s) };
+        newEnd   = { date: isoDate(e) };
+      } else {
+        const s = new Date(ev.start.dateTime); s.setDate(s.getDate() + daysOffset);
+        const e = new Date(ev.end.dateTime);   e.setDate(e.getDate() + daysOffset);
+        newStart = { dateTime: s.toISOString(), timeZone: tz };
+        newEnd   = { dateTime: e.toISOString(), timeZone: tz };
+      }
+      await gapi.client.calendar.events.insert({
+        calendarId: calId,
+        resource: { summary: ev.summary, start: newStart, end: newEnd, colorId: ev.colorId, location: ev.location || '', description: ev.description || '' }
+      });
+    } catch(err) { console.error('Duplicate error:', err); }
+  }
+  clearSelection();
+  await loadEventsForWeek();
+}
 
 // ── MULTI DELETE ──
 document.getElementById('multi-btn-delete').addEventListener('click', async () => {
