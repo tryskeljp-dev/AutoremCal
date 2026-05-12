@@ -865,10 +865,7 @@
     <h3 id="modal-title">NOUVEL ÉVÉNEMENT</h3>
     <div class="modal-field">
       <label>Titre</label>
-      <div class="autocomplete-wrapper">
-        <input type="text" id="ev-title" placeholder="Nom, client, chantier, N° dossier/devis..." autocomplete="off">
-        <div class="autocomplete-list" id="autocomplete-list" style="display:none;"></div>
-      </div>
+      <input type="text" id="ev-title" placeholder="Nom de l'événement..." autocomplete="off">
     </div>
     <div class="modal-field">
       <label>Agenda</label>
@@ -912,8 +909,11 @@
     </div>
     <div class="modal-field">
       <label>📝 Description</label>
-      <textarea id="ev-description" placeholder="Notes, informations complémentaires..." rows="3"
-        style="width:100%;padding:9px 12px;border:var(--bd);background:var(--bg-cell);font-family:'Comic Neue',cursive;font-weight:700;font-size:14px;color:var(--black);outline:none;box-shadow:var(--sh);resize:vertical;"></textarea>
+      <div class="autocomplete-wrapper">
+        <textarea id="ev-description" placeholder="Rechercher un dossier, client, chantier, N°..." rows="3"
+          style="width:100%;padding:9px 12px;border:var(--bd);background:var(--bg-cell);font-family:'Comic Neue',cursive;font-weight:700;font-size:14px;color:var(--black);outline:none;box-shadow:var(--sh);resize:vertical;" autocomplete="off"></textarea>
+        <div class="autocomplete-list" id="autocomplete-list" style="display:none;"></div>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn-save" id="btn-save">💾 Enregistrer</button>
@@ -1203,15 +1203,21 @@ function renderAutocomplete(results, inputEl) {
 }
 
 function selectDossier(item) {
-  const titleInput = document.getElementById('ev-title');
   const num = item.dataset.num;
   const client = item.dataset.client;
   const chantier = item.dataset.title;
   const devis = item.dataset.devis;
-  titleInput.value = `[${num}] [Devis ${devis}] ${client} - ${chantier}`;
+  // Fill title if empty
+  const titleInput = document.getElementById('ev-title');
+  if (!titleInput.value.trim()) {
+    titleInput.value = `[${num}] [Devis ${devis}] ${client} - ${chantier}`;
+  }
+  // Fill description with dossier info
+  const descInput = document.getElementById('ev-description');
+  descInput.value = `Dossier: ${num}\nDevis: ${devis}\nClient: ${client}\nChantier: ${chantier}`;
   document.getElementById('autocomplete-list').style.display = 'none';
   acActiveIndex = -1;
-  titleInput.focus();
+  descInput.focus();
 }
 
 function hideAutocomplete() {
@@ -1221,16 +1227,18 @@ function hideAutocomplete() {
 
 // Wire up autocomplete on title input
 function initAutocomplete() {
-  const titleInput = document.getElementById('ev-title');
+  const descInput = document.getElementById('ev-description');
   const list = document.getElementById('autocomplete-list');
-  if (!titleInput || titleInput._acInit) return;
-  titleInput._acInit = true;
+  if (!descInput || descInput._acInit) return;
+  descInput._acInit = true;
 
-  titleInput.addEventListener('input', () => {
-    renderAutocomplete(searchDossiers(titleInput.value), titleInput);
+  descInput.addEventListener('input', () => {
+    const lines = descInput.value.split('\n');
+    const lastLine = lines[lines.length - 1];
+    renderAutocomplete(searchDossiers(lastLine), descInput);
   });
 
-  titleInput.addEventListener('keydown', e => {
+  descInput.addEventListener('keydown', e => {
     const items = list.querySelectorAll('.autocomplete-item');
     if (!items.length) return;
     if (e.key === 'ArrowDown') {
@@ -1249,7 +1257,7 @@ function initAutocomplete() {
     }
   });
 
-  titleInput.addEventListener('blur', () => {
+  descInput.addEventListener('blur', () => {
     setTimeout(hideAutocomplete, 150);
   });
 }
