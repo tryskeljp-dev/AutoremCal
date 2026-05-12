@@ -377,6 +377,15 @@
   }
   .pill-loc-link:hover { opacity: 1; text-decoration: underline; }
 
+  .pill-desc {
+    font-size: 10px; font-weight: 400;
+    opacity: 0.7; margin-top: 2px;
+    display: block;
+    white-space: normal;
+    word-break: break-word;
+    font-style: italic;
+  }
+
   /* ── AUTOCOMPLETE ── */
   .autocomplete-wrapper { position: relative; }
 
@@ -1464,6 +1473,7 @@ function renderCalendar() {
           const pillClass = isAllDay ? 'event-pill event-allday' : 'event-pill';
           const evJson = escAttr(JSON.stringify({id: ev.id, summary: ev.summary, start: ev.start, end: ev.end, colorId: ev.colorId, location: ev.location, description: ev.description}));
           const locLine = ev.location ? `<div class="pill-loc"><a class="pill-loc-link" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location)}" target="_blank" onclick="event.stopPropagation()">📍 ${escHtml(ev.location)}</a></div>` : '';
+          const descLine = ev.description ? `<div class="pill-desc">📝 ${escHtml(ev.description)}</div>` : '';
           html += `<div class="${pillClass}" style="background:${evColor};color:#000"
             draggable="true"
             data-title="${escAttr(title)}"
@@ -1476,7 +1486,7 @@ function renderCalendar() {
             ondragstart="onDragStart(event, this)"
             ondragend="onDragEnd(event, this)"
             data-ev="${evJson}"
-          ><div class="pill-title">${escHtml(title)}</div><div class="pill-time">${escHtml(time)}</div>${locLine}</div>`;
+          ><div class="pill-title">${escHtml(title)}</div><div class="pill-time">${escHtml(time)}</div>${locLine}${descLine}</div>`;
         }
         // Find end time of last event of the day
         const lastEv = dayEvents[dayEvents.length - 1];
