@@ -474,7 +474,7 @@
     border: var(--bd-thick);
     box-shadow: var(--sh-lg);
     padding: 28px 32px;
-    width: 100%; max-width: 460px;
+    width: 100%; max-width: 580px;
     position: relative;
     max-height: 90vh; overflow-y: auto;
   }
@@ -910,8 +910,8 @@
     <div class="modal-field">
       <label>📝 Description</label>
       <div class="autocomplete-wrapper">
-        <textarea id="ev-description" placeholder="Rechercher un dossier, client, chantier, N°..." rows="3"
-          style="width:100%;padding:9px 12px;border:var(--bd);background:var(--bg-cell);font-family:'Comic Neue',cursive;font-weight:700;font-size:14px;color:var(--black);outline:none;box-shadow:var(--sh);resize:vertical;" autocomplete="off"></textarea>
+        <textarea id="ev-description" placeholder="Rechercher un dossier, client, chantier, N°..." rows="6"
+          style="width:100%;padding:9px 12px;border:var(--bd);background:var(--bg-cell);font-family:'Comic Neue',cursive;font-weight:700;font-size:14px;color:var(--black);outline:none;box-shadow:var(--sh);resize:vertical;min-height:120px;" autocomplete="off"></textarea>
         <div class="autocomplete-list" id="autocomplete-list" style="display:none;"></div>
       </div>
     </div>
@@ -1214,7 +1214,7 @@ function selectDossier(item) {
   }
   // Fill description with dossier info
   const descInput = document.getElementById('ev-description');
-  descInput.value = `Dossier: ${num}\nDevis: ${devis}\nClient: ${client}\nChantier: ${chantier}`;
+  descInput.value = `Dossier: ${num} | Devis: ${devis} | Client: ${client} | Chantier: ${chantier}`;
   document.getElementById('autocomplete-list').style.display = 'none';
   acActiveIndex = -1;
   descInput.focus();
